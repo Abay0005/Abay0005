@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://dev.mindwave.kz/api/sandbox/crud'; 
+const API_BASE_URL = 'http://dev.mindwave.kz/api/sandbox/crud';
 
 export const useProductStore = defineStore('product', {
   state: () => ({
@@ -14,11 +14,12 @@ export const useProductStore = defineStore('product', {
   actions: {
     async fetchProducts() {
       this.loading = true;
+      this.error = null; 
       try {
-        const response = await axios.get(API_BASE_URL); 
+        const response = await axios.get(API_BASE_URL);
         this.products = response.data;
       } catch (error) {
-        this.error = 'Ошибка загрузки данных';
+        this.error = error.response?.data?.message || 'Ошибка загрузки данных';
       } finally {
         this.loading = false;
       }
@@ -26,11 +27,12 @@ export const useProductStore = defineStore('product', {
 
     async addProduct(product) {
       this.loading = true;
+      this.error = null; 
       try {
-        const response = await axios.post(API_BASE_URL, product); 
+        const response = await axios.post(API_BASE_URL, product);
         this.products.push(response.data);
       } catch (error) {
-        this.error = 'Ошибка добавления продукта';
+        this.error = error.response?.data?.message || 'Ошибка добавления продукта';
       } finally {
         this.loading = false;
       }
@@ -38,14 +40,15 @@ export const useProductStore = defineStore('product', {
 
     async updateProduct(id, product) {
       this.loading = true;
+      this.error = null; 
       try {
-        const response = await axios.put(`${API_BASE_URL}/${id}`, product); 
+        const response = await axios.put(`${API_BASE_URL}/${id}`, product);
         const index = this.products.findIndex((p) => p.id === id);
         if (index !== -1) {
           this.products[index] = response.data;
         }
       } catch (error) {
-        this.error = 'Ошибка обновления продукта';
+        this.error = error.response?.data?.message || 'Ошибка обновления продукта';
       } finally {
         this.loading = false;
       }
@@ -53,11 +56,12 @@ export const useProductStore = defineStore('product', {
 
     async deleteProduct(id) {
       this.loading = true;
+      this.error = null; 
       try {
-        await axios.delete(`${API_BASE_URL}/${id}`); 
+        await axios.delete(`${API_BASE_URL}/${id}`);
         this.products = this.products.filter((p) => p.id !== id);
       } catch (error) {
-        this.error = 'Ошибка удаления продукта';
+        this.error = error.response?.data?.message || 'Ошибка удаления продукта';
       } finally {
         this.loading = false;
       }
