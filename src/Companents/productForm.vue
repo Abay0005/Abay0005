@@ -1,56 +1,70 @@
 
 <template>
-    <div>
-      <h2>Добавить продукт</h2>
-      <form @submit.prevent="handleSubmit">
-        <input v-model="product.product_name" placeholder="Название продукта" required />
-        <input v-model.number="product.product_amount" placeholder="Количество" type="number" required />
-        <button type="submit">Добавить</button>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  import { defineComponent, reactive } from 'vue';
-  import { useProductStore } from '../store/productStore';
-  
-  export default defineComponent({
-    setup() {
-      const store = useProductStore(); 
-      const product = reactive({
-        product_name: '',
-        product_amount: 1,
-      });
-  
-      const handleSubmit = async () => {
-        try {
-          await store.addProduct({ ...product }); 
-          product.product_name = ''; 
-          product.product_amount = 1;
-        } catch (error) {
-          console.error('Ошибка добавления продукта:', error);
-        }
-      };
-  
-      return { product, handleSubmit };
-    },
-  });
-  </script>
+  <div class="form-card">
+    <h2 class="form-title">Добавить продукт</h2>
+    <form @submit.prevent="handleSubmit" class="product-form">
+      <input
+        v-model="product.product_name"
+        class="input-field"
+        placeholder="Название продукта"
+        required
+      />
+      <input
+        v-model.number="product.product_amount"
+        class="input-field"
+        placeholder="Количество"
+        type="number"
+        min="1"
+        required
+      />
+      <button type="submit" class="submit-btn">Добавить</button>
+    </form>
+  </div>
+</template>
+
+<script>
+import { defineComponent, reactive } from 'vue';
+import { useProductStore } from '../store/productStore';
+
+export default defineComponent({
+  setup() {
+    const store = useProductStore();
+    const product = reactive({
+      product_name: '',
+      product_amount: 1,
+    });
+
+    const handleSubmit = async () => {
+      try {
+        await store.addProduct({ ...product });
+        product.product_name = ''; 
+        product.product_amount = 1;
+      } catch {
+        alert('Ошибка добавления продукта.');
+      }
+    };
+
+    return { product, handleSubmit };
+  },
+});
+</script>
 
 <style scoped>
-.form-container {
-  width: 100%;
+.form-card {
   max-width: 400px;
-  margin: 0 auto;
+  margin: 20px auto;
   padding: 20px;
-  background-color: #f4f4f4;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
-h2 {
- 
-  font-family: 'Arial', sans-serif;
+.form-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .product-form {
@@ -63,22 +77,23 @@ h2 {
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
   width: 100%;
 }
 
 .input-field:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
 .submit-btn {
   padding: 12px;
   font-size: 16px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -87,5 +102,3 @@ h2 {
   background-color: #45a049;
 }
 </style>
-  
-  

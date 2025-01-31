@@ -1,78 +1,70 @@
 
 <template>
-    <div>
-      <h2>Список продуктов</h2>
-      <button @click="fetchProducts">Обновить</button>
-      <div v-if="loading" >Загрузка...</div>
-      <div v-if="error">{{ error }}</div>
-      <ul>
-        <li v-for="product in products" :key="product.id">
-          {{ product.product_name }} ({{ product.product_amount }})
-          <button @click="deleteProduct(product.id)">Удалить</button>
-          <button @click="selectProduct(product)">Редактировать</button>
-        </li>
-      </ul>
+  <div class="product-list-container">
+    <h2>Список продуктов</h2>
+    <button class="refresh-btn" @click="fetchProducts">Обновить</button>
+    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="products.length === 0 && !loading && !error" class="no-products">
+      Нет продуктов. Добавьте новый продукт.
     </div>
-  </template>
-  
-  <script>
-  import { defineComponent, ref } from 'vue';
-  import { useProductStore } from '../store/productStore';
-  
-  export default defineComponent({
-    setup() {
-      const store = useProductStore();
-      const loading = ref(false);
-      const error = ref(null);
-      const products = ref([]);
-  
-      const fetchProducts = async () => {
-        loading.value = true;
-        error.value = null;
-        try {
-          products.value = await store.fetchProducts(); 
-        } catch (err) {
-          error.value = 'Не удалось загрузить продукты';
-          console.error(err);
-        } finally {
-          loading.value = false;
-        }
-      };
-  
-      const deleteProduct = async (id) => {
-        try {
-          await store.deleteProduct(id);
-          await fetchProducts(); 
-        } catch (err) {
-          error.value = 'Не удалось удалить продукт';
-          console.error(err);
-        }
-      };
-  
-      const selectProduct = (product) => {
-        alert(`Выбран продукт: ${product.product_name}`);
-        
-      };
-  
-      return {
-        fetchProducts,
-        deleteProduct,
-        selectProduct,
-        products,
-        loading,
-        error,
-      };
+    <div class="card-container">
+      <div v-for="product in products" :key="product.id" class="product-card">
+        <h3 class="product-title">{{ product.product_name }}</h3>
+        <p class="product-amount">Количество: {{ product.product_amount }}</p>
+        <div class="actions">
+          <button class="delete-btn" @click="deleteProduct(product.id)">Удалить</button>
+          <button class="edit-btn" @click="selectProduct(product)">Редактировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  data() {
+    return {
+      products: [],
+      loading: false,
+      error: null,
+    };
+  },
+  methods: {
+    async fetchProducts() {
+      try {
+        this.loading = true;
+        this.error = null;
+
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Ошибка при загрузке продуктов');
+        this.products = await response.json();
+      } catch (err) {
+        this.error = err.message || 'Не удалось загрузить данные';
+      } finally {
+        this.loading = false;
+      }
     },
-  });
-  </script>
-
-
+    deleteProduct(productId) {
+      this.products = this.products.filter((product) => product.id !== productId);
+    },
+    selectProduct(product) {
+      console.log('Редактируем:', product);
+    },
+  },
+  created() {
+    this.fetchProducts();
+  },
+});
+</script>
 
 <style scoped>
 .product-list-container {
   width: 100%;
   max-width: 800px;
-  margin: 0 auto;
+  margin: 20px auto;
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -80,8 +72,25 @@
 }
 
 h2 {
-
+  text-align: center;
   font-family: 'Arial', sans-serif;
+  margin-bottom: 20px;
+}
+
+.refresh-btn {
+  display: block;
+  margin: 10px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  background-color: #45a049;
 }
 
 .loading,
@@ -92,58 +101,44 @@ h2 {
   color: #555;
 }
 
-.product-list {
-  list-style-type: none;
-  padding: 0;
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
 }
 
-.product-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  margin: 10px 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.product-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
-.product-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.product-name {
+.product-title {
+  font-size: 18px;
   font-weight: bold;
-  font-size: 16px;
+  margin-bottom: 10px;
 }
 
 .product-amount {
-  font-size: 14px;
-  color: #888;
+  color: #555;
+  margin-bottom: 20px;
 }
 
-.product-actions {
+.actions {
   display: flex;
-  gap: 10px;
+  justify-content: space-around;
 }
 
-.action-btn {
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 4px;
+.delete-btn,
+.edit-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 14px;
   transition: background-color 0.3s ease;
-}
-
-.update-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.update-btn:hover {
-  background-color: #45a049;
 }
 
 .delete-btn {
@@ -155,9 +150,12 @@ h2 {
   background-color: #e53935;
 }
 
-.no-products {
-  font-size: 16px;
-  color: #888;
+.edit-btn {
+  background-color: #2196f3;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #1976d2;
 }
 </style>
-  
